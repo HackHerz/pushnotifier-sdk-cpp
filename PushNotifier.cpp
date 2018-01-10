@@ -10,7 +10,6 @@ using json = nlohmann::json;
 
 PushNotifier::PushNotifier() {
 	this->authorization = base64::encode((string) APP_PACKAGE + ":" + API_TOKEN);
-
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
@@ -24,10 +23,15 @@ PushNotifier::~PushNotifier() {
 
 PushNotifier::PushNotifier(string username, string appToken, time_t expires_at) {
 	this->username = username;
-	this->appToken.token = appToken;
-	this->appToken.expires_at = expires_at;
 
-	PushNotifier();
+	AppToken tok;
+	tok.token = appToken;
+	tok.expires_at = expires_at;
+
+	this->appToken = tok;
+
+	this->authorization = base64::encode((string) APP_PACKAGE + ":" + API_TOKEN);
+	curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
 
