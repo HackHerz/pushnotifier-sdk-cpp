@@ -27,7 +27,8 @@
 
 
 /**
- * PushNotifier SDK Service
+ * @brief PushNotifier SDK Service
+ *
  * A bridge for using PushNotifier
  *
  * @author hackherz
@@ -38,33 +39,43 @@ class PushNotifier
 public:
 
 	/**
-	 * Initialize the PushNotifier instance
+	 * @brief Initialize the PushNotifier instance
 	 */
 	PushNotifier();
 
 
 	/**
-	 * Initialize the PushNotifier instance
-	 * Takes a config array with these options:
+	 * @brief Initialize the PushNotifier instance
 	 *
-	 * @param TODO
+	 * @param username Username of the user
+	 * @param appToken App-Token to user
+	 * @param expires_at Timestamp of the expire date of the token. Set to NULL if you want to disable automatical renewal
 	 */
 	PushNotifier(std::string username, std::string appToken, std::time_t expires_at);
 
+	/**
+	 * @brief Take care of CURL
+	 */
 	~PushNotifier();
 
 
 	/**
-	 * A PushNotifier device
-	 *
-	 * TODO
+	 * @brief A PushNotifier device
 	 */
 	typedef struct {
+		/// Title of the Device
 		std::string title;
+
+		/// ID of the Device
 		std::string id;
+
+		/// Model of the Device
 		std::string model;
+
+		/// URL to Device-image
 		std::string image;
 
+		/// String representation of the device (without image)
 		std::string toString() {
 			return "Title: " + title + " ID: " + id + " Model: " + model;
 		}
@@ -72,14 +83,16 @@ public:
 
 
 	/**
-	 * Represents an AppToken
-	 *
-	 * TODO
+	 * @brief Representation of an AppToken
 	 */
 	typedef struct {
+		/// The token itself
 		std::string token;
+
+		/// Timestamp of the expiration date
 		std::time_t expires_at;
 
+		/// Checks if the token expires within the next 48 hours
 		bool isAboutToExpire() {
 			return std::difftime(expires_at, std::time(nullptr)) < 48.0 * 3600;
 		}
@@ -87,50 +100,46 @@ public:
 
 
 	/**
-	 * Log in as a user
+	 * @brief Log in as a user
 	 *
-	 * @param string       $username Username
-	 * @param string       $password Password
-	 * @param bool         $apply    Automatically apply the AppToken to this instance
+	 * @param username Username to login with
+	 * @param  password Passwordof the user
+	 * @param apply Automatically apply the AppToken or just return it
 	 *
 	 * @return AppToken
-	 *
-	 * @throws InvalidCredentialsException If the users couldn't be authenticated
-	 * @throws PushNotifierException If an unknown error happened
 	 */
 	AppToken login(std::string username, std::string password, bool apply = true);
 
 
 	/**
-	 * Refresh the current AppToken
+	 * @brief Refresh the current AppToken
+	 *
 	 * This can be done any time but shouldn't be done until 48 hours before it expires
 	 *
-	 * @param bool apply Automatically apply the AppToken to this instance
+	 * @param apply Automatically apply the AppToken to this instance
 	 *
 	 * @return AppToken
 	 *
-	 * @throws InvalidAppTokenException If the token had expired already
-	 * @throws PushNotifierException If an unknown error happened
+	 * @throws runtime_error If an unknown error happened
 	 */
 	AppToken refreshToken(bool apply = true);
 
 
 	/**
-	 * Get all devices the current user has
+	 * @brief Get all devices the current user has
 	 *
-	 * @return Device[]
+	 * @return List of Device
 	 *
-	 * @throws InvalidAppTokenException If the AppToken has expired or is invalid
-	 * @throws PushNotifierException If an unknown error happened
+	 * @throws runtime_error If an unknown error happened
 	 */
 	std::vector<Device> getDevices();
 
 
 	/**
-	 * Set the AppToken that should be used
+	 * @brief Set the AppToken that should be used
 	 *
-	 * @param string        $appToken AppToken
-	 * @param DateTime|null $expiry   Expiration Date of the AppToken, set null to disable auto-renewal
+	 * @param appToken AppToken
+	 * @param expires_at Expiration Date of the AppToken, set null to disable auto-renewal
 	 *
 	 * @return PushNotifier
 	 */
@@ -138,81 +147,111 @@ public:
 
 
 	/**
-	 * Get the current AppToken
+	 * @brief Get the current AppToken
+	 *
 	 * Renews itself automatically in case it is about to expire
 	 *
-	 * @return string
+	 * @return string representation of the token
 	 */
 	std::string getAppToken();
 
 
 
 	/**
-	 * Send a text-only message
+	 * @brief Send a text-only message
 	 *
-	 * @param array        $devices Devices to send to, either Device[] or string[] (IDs of the devices)
-	 * @param string       $content Content to send
-	 * @param bool         $silent  If true, no sound is played
+	 * @param deviceIDs List of Device-IDs to send to
+	 * @param content Message to send
+	 * @param silent If true, no sound is played
 	 *
-	 * @return array                 [ 'success' => [ { device_id: ... }, ... ], 'error' => [ { device_id: ... }, ... ] ]
+	 * @return Whether the message has been successfully delivered to all devices or not
 	 *
-	 * @throws DeviceNotFoundException If at least one device could not be found
-	 * @throws InvalidAppTokenException If the AppToken has expired or is invalid
-	 * @throws PushNotifierException If an unknown error happened
+	 * @throws runtime_error If content is empty
 	 */
 	bool sendMessage(std::vector<std::string> deviceIDs, std::string content, bool silent = false);
 
 
-	/// TODO
+	/**
+	 * @brief Send a message
+	 *
+	 * @param deviceID Device-ID to send to
+	 * @param content Message to send
+	 * @param silent If true, no sound is played
+	 *
+	 * @return Whether the message has been successfully delivered to all devices or not
+	 *
+	 * @throws runtime_error If content is empty
+	 */
 	bool sendMessage(std::string deviceID, std::string content, bool silent = false);
 
 
 	/**
-	 * Send a link
+	 * @brief Send a link
 	 *
-	 * @param array        $devices Devices to send to, either Device[] or string[] (IDs of the devices)
-	 * @param string       $url     URL to send
-	 * @param bool         $silent  If true, no sound is played
+	 * @param deviceIDs List of Device-IDs to send to
+	 * @param url URL to send
+	 * @param silent If true, no sound is played
 	 *
-	 * @return array                 [ 'success' => [ { device_id: ... }, ... ], 'error' => [ { device_id: ... }, ... ] ]
+	 * @return Whether the url has been successfully delivered to all devices or not
 	 *
-	 * @throws DeviceNotFoundException If at least one device could not be found
-	 * @throws InvalidAppTokenException If the AppToken has expired or is invalid
-	 * @throws PushNotifierException If an unknown error happened
+	 * @throws runtime_error If url is empty
 	 */
 	bool sendURL(std::vector<std::string> deviceIDs, std::string url, bool silent = false);
 
 
-	/// TODO
+
+	/**
+	 * @brief Send a link
+	 *
+	 * @param deviceID Device-ID to send to
+	 * @param url URL to send
+	 * @param silent If true, no sound is played
+	 *
+	 * @return Whether the url has been successfully delivered to all devices or not
+	 *
+	 * @throws runtime_error If url is empty
+	 */
 	bool sendURL(std::string deviceID, std::string url, bool silent = false);
 
 
 	/**
-	 * Send a notification with content and a URL
+	 * @brief Send a notification with content and a URL
+	 *
 	 * The user will be taken to the URL after tapping on the notification
 	 *
-	 * @param array        $devices Devices to send to, either Device[] or string[] (IDs of the devices)
-	 * @param string       $content Content to send
-	 * @param string       $url     URL to send
-	 * @param bool         $silent  If true, no sound is played
+	 * @param deviceIDs List of Device-IDs to send to
+	 * @param content Content to send
+	 * @param url URL to send
+	 * @param silent If true, no sound is played
 	 *
-	 * @return array                 [ 'success' => [ { device_id: ... }, ... ], 'error' => [ { device_id: ... }, ... ] ]
+	 * @return Whether the notification has been successfully delivered to all devices or not
 	 *
-	 * @throws DeviceNotFoundException If at least one device could not be found
-	 * @throws InvalidAppTokenException If the AppToken has expired or is invalid
-	 * @throws PushNotifierException If an unknown error happened
+	 * @throws runtime_error If url or content are empty
 	 */
 	bool sendNotification(std::vector<std::string> deviceIDs, std::string content, std::string url, bool silent = false);
 
 
-	/// TODO
+	/**
+	 * @brief Send a notification with content and a URL
+	 *
+	 * The user will be taken to the URL after tapping on the notification
+	 *
+	 * @param deviceID Device-ID to send to
+	 * @param content Content to send
+	 * @param url URL to send
+	 * @param silent If true, no sound is played
+	 *
+	 * @return Whether the notification has been successfully delivered to all devices or not
+	 *
+	 * @throws runtime_error If url or content are empty
+	 */
 	bool sendNotification(std::string deviceID, std::string content, std::string url, bool silent = false);
 
 
 
 private:
 	/**
-	 * TODO
+	 * Enum Class to specify the Http method for call
 	 */
 	typedef enum {
 		PUT,
@@ -221,17 +260,26 @@ private:
 	} http_method;
 
 	/**
-	 * TODO
+	 * @brief CURL wrapper function
+	 *
+	 * @param method Http Method to use
+	 * @param url The Url to invoke
+	 * @param xapptoken X-AppToken for Api Authentication
+	 * @param body JSON-Request data
+	 *
+	 * @return JSON-Object of the response
+	 *
+	 * @throws runtime_error If the Api response indicates an error or CURL failed
 	 */
 	nlohmann::json call(http_method method, std::string url, const char* xapptoken, nlohmann::json body);
 
-	/// TODO
+	/// Currently used Username
 	std::string username;
 
-	/// TODO
+	/// Currently used AppToken
 	AppToken appToken;
 
-	/// TODO
+	/// Authorization Header Value
 	std::string authorization;
 };
 
